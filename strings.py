@@ -7,7 +7,7 @@ en = {
 }
 
 tr = {
-    "found_these": "Ahanda bulduklarım: ",
+    "found_these": "Lan koş u/Asim-Tahir\nAhanda bulduklarım: ",
     "nothing": "Aradım, taradım bulamadım mq 😔",
     "goodbot": "Eyw kanka (¬‿¬)",
     "no_image": "Bu gönderide görsel yok mq. Beni niye gereksiz yer çağırdın 😡",
