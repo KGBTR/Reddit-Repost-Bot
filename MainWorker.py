@@ -159,24 +159,24 @@ class MainWorker:
             print()
             # NOTIFS HANDLED HERE:
             # GOOGLE + DATABASE QUERY
-            notifs = reverse_img_bot.check_inbox(rkind='t1')
+            notifs = self.reverse_img_bot.check_inbox(rkind='t1')
             for notif in notifs:
                 print(notif)
                 # GOOGLE
-                reverse_img_bot.read_notifs([notif])
-                reply_job = notif_handler2(notif)
+                self.reverse_img_bot.read_notifs([notif])
+                reply_job = self.notif_handler2(notif)
                 if reply_job.status == "success":
-                    reverse_img_bot.send_reply(reply_job.text, notif, handle_ratelimit=True)
+                    self.reverse_img_bot.send_reply(reply_job.text, notif, handle_ratelimit=True)
                     continue
             
                 #DATABASE
-                post = reverse_img_bot.get_info_by_id(notif.post_id)
-                reply_job_database = database_query_from_post(post)
+                post = self.reverse_img_bot.get_info_by_id(notif.post_id)
+                reply_job_database = self.database_query_from_post(post)
                 if reply_job_database.status == "success":
-                    reverse_img_bot.send_reply(reply_job_database.text, notif, handle_ratelimit=True)
+                    self.reverse_img_bot.send_reply(reply_job_database.text, notif, handle_ratelimit=True)
                     continue
                 else:
-                    reverse_img_bot.send_reply(reply_job.text, notif, handle_ratelimit=True)
+                    self.reverse_img_bot.send_reply(reply_job.text, notif, handle_ratelimit=True)
                     continue
 
             sleep(5)
