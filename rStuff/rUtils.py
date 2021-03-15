@@ -1,3 +1,6 @@
+import requests
+
+
 rBase = "https://www.reddit.com"
 
 # Some stuff.. ------------------
@@ -48,9 +51,9 @@ class rPost:
         else:
             gallery_content = content
 
-        self.is_gallery = gallery_content.get('is_gallery', False)
-        if self.is_gallery:
-            if gallery_content['gallery_data'] is None:
+        self.is_gallery = gallery_content.get('is_gallery')
+        if bool(self.is_gallery):
+            if gallery_content.get('gallery_data') is None:
                 self.is_img = False
             else:
                 self.gallery_media = []
@@ -89,3 +92,65 @@ class rPost:
             return True
         else:
             return False
+
+
+class rPostPushShift:
+    def __init__(self, post):
+        content = post
+        self.id_ = 't3_' + content['id']  # answer to this. represents the post with t3 prefix
+        self.permalink = content['permalink']
+        self.created_utc = content['created_utc']
+        self.id_without_prefix = content['id']
+        self.is_self = content['is_self']  # text or not
+        self.is_video = content['is_video']  # video or not
+        self.author = content['author']  # author
+        self.title = content['title']
+
+        if content.get('crosspost_parent_list') is not None:
+            gallery_content = content['crosspost_parent_list'][0]
+        else:
+            gallery_content = content
+
+        self.is_gallery = gallery_content.get('is_gallery')
+        if bool(self.is_gallery):
+            self.gallery_media = []
+            if gallery_content.get('gallery_data') is None:
+                self.is_img = False
+            else:
+                for gd in gallery_content['gallery_data']['items']:
+                    gallery_id = gd['media_id']
+                    try:
+                        img_m = gallery_content['media_metadata'][gallery_id]['m'].split('/')[-1]
+                    except KeyError:
+                        img_m = 'jpg'
+                    self.gallery_media.append(f"https://i.redd.it/{gallery_id}.{img_m}")
+                self.url = self.gallery_media[0]
+                self.is_img = True
+        else:
+            self.url = content['url']  # url
+            self.is_img = self._is_img_post()
+        self.subreddit = content['subreddit']
+        self.subreddit_name_prefixed = 'r/' + self.subreddit
+        self.over_18 = content['over_18']
+        if self.subreddit in turkish_subs:
+            self.lang = 'tr'
+        else:
+            self.lang = 'en'
+
+    def __repr__(self):
+        return f"(PostObject: {self.id_})"
+
+    def __eq__(self, other):
+        if self.id_ == other.id_:
+            return True
+        else:
+            return False
+
+    def _is_img_post(self):
+        if not (self.is_self or self.is_video) and self.url.split(".")[-1].lower() in ["jpg", "jpeg", "png", "tiff", "bmp"]:
+            return True
+        else:
+            return False
+
+    def is_img_available(self):
+        return requests.head(self.url) == 200

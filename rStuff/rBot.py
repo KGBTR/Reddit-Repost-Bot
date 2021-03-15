@@ -5,7 +5,7 @@ from http import cookiejar
 from .rUtils import rNotif, rBase, rPost
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-from ratelimit import sleep_and_retry, limits
+# from ratelimit import sleep_and_retry, limits
 from time import sleep, time
 
 
@@ -47,12 +47,11 @@ class rBot:
         self.req_sesh = self.prep_session()
         self.get_new_token()  # Fetch the token on instantioation (i cant spell for shit)
 
-    @sleep_and_retry
-    @limits(calls=30, period=60)
+    # @sleep_and_retry
+    # @limits(calls=60, period=60)
     def handled_req(self, method, url, **kwargs):
         if self.next_token_t <= int(time()):
             self.get_new_token()
-
         while True:
             try:
                 response = self.req_sesh.request(method, url, **kwargs)
@@ -107,7 +106,7 @@ class rBot:
         self.handled_req('POST', f"{self.base}/api/del", data={"id": thingid})
         logger.info(f"comment removed: {thingid}")
 
-    def send_reply(self, text, thing):
+    def send_reply(self, text, thing, handle_ratelimit=False):
         if isinstance(thing, str):
             thing_id = thing
         else:
@@ -129,10 +128,13 @@ class rBot:
                 num_in_err = int(''.join(list(filter(str.isdigit, to_log))))
                 sleep_for = num_in_err + 5 if sec_or_min == "sec" else (num_in_err * 60) + 5
                 logger.info(f"sleep for {sleep_for}")
-                return sleep_for
+                if handle_ratelimit:
+                    sleep(sleep_for)
+                else:
+                    return sleep_for
             else:
                 return 0
-        except KeyError:
+        except:
             logger.info("message sent")
             return 0
 
@@ -168,7 +170,7 @@ class rBot:
         data = {'model': f'{{"name":"{sub}"}}'}
         self.handled_req('PUT', f'{self.base}/api/filter/user/{self.bot_username}/f/all/r/{sub}', data=data)
 
-    def save_thing_by_id(self, thing_id):  # this for checking if the thing was seen before
+    def save_thing_by_id(self, thing_id):
         self.handled_req('POST', f'{self.base}/api/save', params={"id": thing_id})
         logger.info(f'{thing_id} saved')
 

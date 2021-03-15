@@ -2,8 +2,8 @@ from .rUtils import rPost
 
 
 class PostFetcher:
-    def __init__(self, bot, subs=None, limit=50, sort_by='new', pagination=True, stop_if_saved=True, skip_if_nsfw=False,
-                 before_or_after='before', pagination_param=None, multiname=None):
+    def __init__(self, bot, subs=None, limit=50, sort_by='new', pagination=True, stop_if_saved=False, skip_if_nsfw=False,
+                 before_or_after='before', pagination_param=None, multiname=None, only_image=False):
         assert any(before_or_after == ba for ba in ['before', 'after'])
         assert (subs is not None) != (multiname is not None)
 
@@ -15,10 +15,13 @@ class PostFetcher:
         self.pagination = pagination
         self.stop_if_saved = stop_if_saved
         self.skip_if_nsfw = skip_if_nsfw
+        self.only_image = only_image
         self.before_or_after = before_or_after
+        self.pagination_param = pagination_param
 
         self.last_fetched_ids = []
-        if pagination_param is not None:
+
+        if self.pagination_param is not None:
             self.params.update({self.before_or_after: self.pagination_param})
         self._fallback_index = 0
         if self.before_or_after == 'before':
@@ -26,7 +29,6 @@ class PostFetcher:
             self._pagination_post_indexer = 0
         elif self.before_or_after == 'after':
             self._pagination_post_indexer = self._fallback_index_incrementer = -1
-        self.pagination_param = None
 
         if multiname is not None:
             self._uri = f"{self.bot.base}/user/{self.bot.bot_username}/m/{multiname}/{self.sort_by}"
@@ -37,20 +39,18 @@ class PostFetcher:
         posts_req = self.bot.handled_req('GET', self._uri, params=self.params).json()
         posts = posts_req["data"]["children"]
         posts_len = posts_req["data"]["dist"]
-
         if self.before_or_after == "before":
-            posts_iter = enumerate(posts)
+            posts_iter = posts
         elif self.before_or_after == "after":
-            posts_iter = enumerate(reversed(posts))
+            posts_iter = reversed(posts)
         else:
             raise NotImplementedError
 
-        for index, post in posts_iter:
+        for post in posts_iter:
             the_post = rPost(post)
             if the_post.id_ in self.last_fetched_ids or (self.stop_if_saved and the_post.is_saved):
                 break
-            # self.bot.save_thing_by_id(the_post.id_)
-            if self.skip_if_nsfw and the_post.over_18:
+            if (self.only_image and not the_post.is_img) or (self.skip_if_nsfw and the_post.over_18):
                 continue
             yield the_post
 
@@ -68,6 +68,9 @@ class PostFetcher:
                 self._fallback_index = 0
                 self.pagination_param = posts[self._pagination_post_indexer]['data']['name']
             else:
-                self.pagination_param = self.last_fetched_ids[self._fallback_index % 15]
+                try:
+                    self.pagination_param = self.last_fetched_ids[self._fallback_index % 15]
+                except IndexError:
+                    pass
                 self._fallback_index += self._fallback_index_incrementer
             self.params.update({self.before_or_after: self.pagination_param})
