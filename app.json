@@ -1,0 +1,32 @@
+{
+  "name": "Reverse Image Search Reddit Bot",
+  "description": "If you bored repost submission on reddit this bot for you.",
+  "image": "heroku/python",
+  "repository": "https://github.com/scrubjay55/Reddit-Repost-Bot-RipOff",
+  "keywords": [
+    "python",
+    "reddit",
+    "bot",
+    "reverse",
+    "image",
+    "search"
+  ],
+  "env": {
+    "useragent": {
+      "description": "Reddit bot useragent like u/BotName:V1.0 by u/CreatorName"
+    },
+    "client_id": {
+      "description": "Reddit bot client id like bbIBQSrpKHpWJy"
+    },
+    "client_secret": {
+      "description": "Reddit bot client secret like ybYajpectYCbdLecIOmSEOUzedR"
+    },
+    "bot_username": {
+      "description": "Reddit bot username like BotUsername. Shouldn't contain u/"
+    },
+    "bot_pass": {
+      "description": "Reddit bot password like WAYiCAGhCasWTiSslawKQiXdZzPHshwigWWD"
+    }
+  },
+  "addons": [ "heroku-postgresql" ]
+}
