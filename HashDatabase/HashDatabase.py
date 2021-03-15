@@ -1,15 +1,18 @@
-from info import DATABASE_URL as db_url
+from info import DATABASE_URL
 import psycopg2
 from CompareImageHashes import CompareImageHashes
+import logging
 
 
 class HashDatabase:
-    DATABASE_URL = db_url
-
     def __init__(self):
-        self.conn = psycopg2.connect(self.DATABASE_URL, sslmode='require')
+        self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         self.cur = self.conn.cursor()
-        print("hash db initilaized")
+
+        logging.basicConfig(level=logging.INFO, datefmt='%H:%M', format='%(asctime)s, %(levelname)s: %(message)s')
+        self.logger = logging.getLogger("hoarder")
+        self.logger.disabled = False
+        self.logger.info("hash db initilaized")
 
     def create_table(self, name, values):
         # values = postid TEXT, dhash TEXT
@@ -20,8 +23,9 @@ class HashDatabase:
     def insert_data(self, postid, dhash, ahash, phash):
         try:
             self.cur.execute("INSERT INTO Hashes (postid, dhash, ahash, phash) VALUES (%s, %s, %s, %s);", (postid, dhash, ahash, phash))
+            self.logger.info(f"saved into the db: {postid}")
         except psycopg2.errors.UniqueViolation:
-            print("same post skipping...")
+            self.logger.warning(f"same post skipping: {postid}")
         finally:
             self.conn.commit()
 

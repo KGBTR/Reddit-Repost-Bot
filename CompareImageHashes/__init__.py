@@ -1,1 +1,1 @@
-from .CompareImageHashes import CompareImageHashes, HashedImage
+from .CompareImageHashes import CompareImageHashes, HashedImage, ImgNotAvailable

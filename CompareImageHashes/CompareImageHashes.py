@@ -3,6 +3,10 @@ import imagehash
 import requests
 
 
+class ImgNotAvailable(Exception):
+    pass
+
+
 class HashedImage:
     def __init__(self, pic_url, calculate_on_init=False):
         self.opened_stream = Image.open(self._get_raw_img(pic_url))
@@ -26,6 +30,8 @@ class HashedImage:
 
     def _get_raw_img(self, url):
         img = requests.get(url, stream=True)
+        if img.status_code != 200:
+            raise ImgNotAvailable
         img.raw.decode_content = True
         return img.raw
 

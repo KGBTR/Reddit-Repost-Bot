@@ -5,16 +5,17 @@ import re
 from CompareImageHashes import CompareImageHashes, HashedImage
 from datetime import datetime
 from collections import namedtuple
+from rStuff import PostFetcher
 
 
 class MainWorker:
-    def __init__(self, rBot, hashdb):
+    def __init__(self, bot, hashdb):
         self.good_bot_strs = ["good bot", "iyi bot", "güzel bot", "cici bot"]
         self.reddit_submission_regex = re.compile(r"^https?://(www.)*reddit.com/r/.+?/comments/(.+?)/.*")
 
         self.hash_database = hashdb
-        self.reverse_img_bot = rBot
-        self.fetcher = self.reverse_img_bot.init_new_fetcher(stop_if_saved=False, subs=['KGBTR'], before_or_after='before')
+        self.reverse_img_bot = bot
+        self.fetcher = PostFetcher(bot=self.reverse_img_bot, stop_if_saved=True, subs=['KGBTR'], before_or_after='before', only_image=True, limit=50)
         self.ReplyJob = namedtuple('ReplyJob', 'reply_to text status')
 
     def comment_parser(self, body):
@@ -90,13 +91,10 @@ class MainWorker:
         lang_f = tr if post.lang == 'tr' else en
         for index in range(3):
             if index == 0:
-                print(str(hashfrompost.get_ahash()) + " ahash")
                 query_result = self.hash_database.query(hashfrompost.get_ahash(), 'ahash', 90, post.id_)
             elif index == 1:
-                print(str(hashfrompost.get_dhash()) + " dhash")
                 query_result = self.hash_database.query(hashfrompost.get_dhash(), 'dhash', 90, post.id_)
             elif index == 2:
-                print(str(hashfrompost.get_phash()) + " phash")
                 query_result = self.hash_database.query(hashfrompost.get_phash(), 'phash', 90, post.id_)
             else:
                 raise NotImplementedError
@@ -152,17 +150,12 @@ class MainWorker:
     def start_working(self):
         while True:
             # AUTO POST FETCHING:
-            # THUS ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
-            posts = self.fetcher.fetch_posts()
-            for post in posts:
-                if not post.is_img:
-                    continue
-                print(post)
-
+            # THUS, ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
+            for post in self.fetcher.fetch_posts():
+                print(f"checking: {post}")
                 reply_job = self.database_query_from_post(post)
                 if reply_job.status == "success":
-                    pass
-                    # reverse_img_bot.send_reply(reply_job.text, post, handle_ratelimit=True)
+                    self.reverse_img_bot.send_reply(reply_job.text, post, handle_ratelimit=True)
             print()
             # # NOTIFS HANDLED HERE:
             # # GOOGLE + DATABASE QUERY
@@ -186,4 +179,4 @@ class MainWorker:
             #         reverse_img_bot.send_reply(reply_job.text, notif, handle_ratelimit=True)
             #         continue
 
-            sleep(50)
+            sleep(5)

@@ -1,2 +1,2 @@
-hoarder: python bot.py
-main: python MainWorker.py
+hoarder: python hoarder.py
+main: python main.py
