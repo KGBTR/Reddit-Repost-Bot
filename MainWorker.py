@@ -141,9 +141,11 @@ class MainWorker:
             reply_built = self.search_loop(img_url, filter_site, link_mode)
 
             if bool(reply_built):
-                return self.ReplyJob(notif, f"{lang_f['found_these']}\r\n\n{reply_built}", "success")
+                reply_comment_text = f"{lang_f['found_these']}\r\n\n{reply_built}{lang_f['outro']}"
+                return self.ReplyJob(notif, reply_comment_text, "success")
             else:
-                return self.ReplyJob(notif, lang_f["nothing"], "fail")
+                reply_comment_text = f"{lang_f['nothing']}{lang_f['outro']}"
+                return self.ReplyJob(notif, reply_comment_text, "fail")
 
         elif notif.rtype == "comment_reply":
             # GOOD BOT
