@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import imagehash
 import requests
 
@@ -9,7 +9,11 @@ class ImgNotAvailable(Exception):
 
 class HashedImage:
     def __init__(self, pic_url, calculate_on_init=False):
-        self.opened_stream = Image.open(self._get_raw_img(pic_url))
+        try:
+            self.opened_stream = Image.open(self._get_raw_img(pic_url))
+        except UnidentifiedImageError:
+            print(f"UnidentifiedImageError: {pic_url}")
+            raise ImgNotAvailable
         if calculate_on_init:
             self.ahash = self.get_ahash()
             self.dhash = self.get_dhash()
