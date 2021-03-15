@@ -4,6 +4,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
 .idea
+test.py
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
