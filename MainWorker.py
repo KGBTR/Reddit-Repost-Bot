@@ -113,9 +113,11 @@ class MainWorker:
                 break
 
         if bool(result_txt):
-            return self.ReplyJob(post, f"{lang_f['found_these']}\r\n\n{result_txt}", "success")
+            reply_comment_text = f"{lang_f['found_these']}\r\n\n{result_txt}{lang_f['outro']}"
+            return self.ReplyJob(post, reply_comment_text, "success")
         else:
-            return self.ReplyJob(post, lang_f["nothing"], "fail")
+            reply_comment_text = f"{lang_f['nothing']}{lang_f['outro']}"
+            return self.ReplyJob(post, reply_comment_text, "fail")
 
     def notif_handler2(self, notif):
         lang_f = tr if notif.lang == 'tr' else en
@@ -126,7 +128,8 @@ class MainWorker:
             sub_filter, gallery_index = parsed_comment['sub_filter'], parsed_comment['gallery_index']
 
             if not post.is_img:
-                return self.ReplyJob(notif, lang_f["no_image"], "fail")
+                reply_comment_text = f"{lang_f['no_image']}{lang_f['outro']}"
+                return self.ReplyJob(notif, reply_comment_text, "fail")
             if post.is_gallery:
                 img_url = post.gallery_media[gallery_index % len(post.gallery_media)]
             else:
