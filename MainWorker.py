@@ -89,13 +89,13 @@ class MainWorker:
         hashfrompost = HashedImage(post.url, calculate_on_init=False)
         result_txt = None
         lang_f = tr if post.lang == 'tr' else en
-        for index in range(3):
+        for index in range(2):
             if index == 0:
-                query_result = self.hash_database.query(hashfrompost.get_ahash(), 'ahash', 90, post.id_)
+                query_result = self.hash_database.query(hashfrompost.get_phash(), 'phash', 90, post.id_)
             elif index == 1:
                 query_result = self.hash_database.query(hashfrompost.get_dhash(), 'dhash', 90, post.id_)
-            elif index == 2:
-                query_result = self.hash_database.query(hashfrompost.get_phash(), 'phash', 90, post.id_)
+            # elif index == 2:
+            #     query_result = self.hash_database.query(hashfrompost.get_ahash(), 'ahash', 90, post.id_)
             else:
                 raise NotImplementedError
 
@@ -147,6 +147,9 @@ class MainWorker:
             if any(x in notif.body.lower() for x in self.good_bot_strs):
                 return self.ReplyJob(notif, lang_f['goodbot'], "success")
 
+        else:
+            return None
+
     def start_working(self):
         while True:
             # AUTO POST FETCHING:
@@ -165,6 +168,8 @@ class MainWorker:
                 # GOOGLE
                 self.reverse_img_bot.read_notifs([notif])
                 reply_job = self.notif_handler2(notif)
+                if reply_job is None:
+                    continue
                 if reply_job.status == "success":
                     self.reverse_img_bot.send_reply(reply_job.text, notif, handle_ratelimit=True)
                     continue
