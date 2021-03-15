@@ -95,7 +95,7 @@ class MainWorker:
             elif index == 1:
                 query_result = self.hash_database.query(hashfrompost.get_dhash(), 'dhash', 96, post.id_)
             elif index == 2:
-                query_result = self.hash_database.query(hashfrompost.get_ahash(), 'ahash', 96, post.id_)
+                query_result = self.hash_database.query(hashfrompost.get_ahash(), 'ahash', 99, post.id_)
             else:
                 raise NotImplementedError
 
