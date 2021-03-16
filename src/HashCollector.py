@@ -1,5 +1,6 @@
 from CompareImageHashes import HashedImage, ImgNotAvailable
 from rStuff import PostFetcherPushShift
+from time import sleep
 
 
 class HashCollector:
@@ -52,7 +53,7 @@ class HashCollector:
         # self.hash_database.insert_data("t3_aaaaaa", str(hashedimg.dhash), str(hashedimg.ahash), str(hashedimg.phash))
         # exit()
 
-        b_a_dec = 0
+        # b_a_dec = 0
         while True:
             # if b_a_dec % 4 == 0:
             print("fetched from after")
@@ -70,6 +71,7 @@ class HashCollector:
                     str(hashedimg.ahash),
                     str(hashedimg.phash),
                 )
+            sleep(30)
             # else:
             #     print("fetched from before")
             #     for post in self.fetcher_before.fetch_posts():
