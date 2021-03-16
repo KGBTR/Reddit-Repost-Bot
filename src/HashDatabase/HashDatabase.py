@@ -53,8 +53,13 @@ class HashDatabase:
         self.cur.execute(sql)
         return self.cur.fetchall()
 
-    def update_before_and_after(self, before, after):
-        sql = f"UPDATE beforeafter SET before = '{before}', after = '{after}';"
+    def update_before_and_after(self, before=None, after=None):
+        ba_l = []
+        if before is not None:
+            ba_l.append(f"before = '{before}'")
+        if after is not None:
+            ba_l.append(f"after = '{after}'")
+        sql = f"UPDATE beforeafter SET {','.join(ba_l)}"
         self.cur.execute(sql)
         self.conn.commit()
 

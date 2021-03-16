@@ -211,7 +211,6 @@ class MainWorker:
                     self.reverse_img_bot.send_reply(
                         reply_job.text, post, handle_ratelimit=True
                     )
-            print()
             # NOTIFS HANDLED HERE:
             # GOOGLE + DATABASE QUERY
             notifs = self.reverse_img_bot.check_inbox(rkind="t1")
