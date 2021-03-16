@@ -1,2 +1,2 @@
-hoarder: python hoarder.py
-main: python main.py
+hoarder: python src/hoarder.py
+main: python src/main.py
