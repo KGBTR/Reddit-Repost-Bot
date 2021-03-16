@@ -33,7 +33,10 @@ class HashedImage:
     #     return imagehash.crop_resistant_hash(self.opened_stream)
 
     def _get_raw_img(self, url):
-        img = requests.get(url, stream=True)
+        try:
+            img = requests.get(url, stream=True)
+        except requests.exceptions.ConnectionError:
+            raise ImgNotAvailable
         if img.status_code != 200:
             raise ImgNotAvailable
         img.raw.decode_content = True
