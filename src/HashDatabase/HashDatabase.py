@@ -6,10 +6,14 @@ import logging
 
 class HashDatabase:
     def __init__(self):
-        self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        self.conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         self.cur = self.conn.cursor()
 
-        logging.basicConfig(level=logging.INFO, datefmt='%H:%M', format='%(asctime)s, %(levelname)s: %(message)s')
+        logging.basicConfig(
+            level=logging.INFO,
+            datefmt="%H:%M",
+            format="%(asctime)s, %(levelname)s: %(message)s",
+        )
         self.logger = logging.getLogger("hoarder")
         self.logger.disabled = False
         self.logger.info("hash db initilaized")
@@ -22,7 +26,10 @@ class HashDatabase:
 
     def insert_data(self, postid, dhash, ahash, phash):
         try:
-            self.cur.execute("INSERT INTO Hashes (postid, dhash, ahash, phash) VALUES (%s, %s, %s, %s);", (postid, dhash, ahash, phash))
+            self.cur.execute(
+                "INSERT INTO Hashes (postid, dhash, ahash, phash) VALUES (%s, %s, %s, %s);",
+                (postid, dhash, ahash, phash),
+            )
             self.logger.info(f"saved into the db: {postid}")
         except psycopg2.errors.UniqueViolation:
             self.logger.warning(f"same post skipping: {postid}")
@@ -38,7 +45,7 @@ class HashDatabase:
             post_id, sltced_hash = row[0], row[1]
             similarity = comparer.hamming_distance_percentage(sltced_hash)
             if similarity >= min_similarity_percentage:
-                return {'similarity': similarity, 'post_id': post_id}
+                return {"similarity": similarity, "post_id": post_id}
         return None
 
     def fetch_all(self, table_name):
@@ -52,10 +59,12 @@ class HashDatabase:
         self.conn.commit()
 
     def reset_before_and_after(self):
-        self.update_before_and_after('None', 'None')
+        self.update_before_and_after("None", "None")
 
     def initialize_before_and_after(self):
-        self.cur.execute("INSERT INTO beforeafter (before, after) VALUES ('None', 'None');")
+        self.cur.execute(
+            "INSERT INTO beforeafter (before, after) VALUES ('None', 'None');"
+        )
         self.conn.commit()
 
     def fetch_before_and_after(self):

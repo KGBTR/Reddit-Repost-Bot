@@ -55,13 +55,19 @@ class CompareImageHashes:
         img.raw.decode_content = True
         return img.raw
 
-    def _get_imagehash_type_from_any(self, anything):  # only url, ImageHash and hex str is accepted
+    def _get_imagehash_type_from_any(
+        self, anything
+    ):  # only url, ImageHash and hex str is accepted
         if isinstance(anything, str):
-            if anything.startswith('http'):
-                return HashedImage(anything, calculate_on_init=False).get_phash()  # default to phash
+            if anything.startswith("http"):
+                return HashedImage(
+                    anything, calculate_on_init=False
+                ).get_phash()  # default to phash
             elif "," in anything:
-                str_split = anything.split(',')
-                return imagehash.ImageMultiHash([imagehash.hex_to_hash(segment) for segment in str_split])
+                str_split = anything.split(",")
+                return imagehash.ImageMultiHash(
+                    [imagehash.hex_to_hash(segment) for segment in str_split]
+                )
             else:
                 return imagehash.hex_to_hash(anything)
         elif isinstance(anything, (imagehash.ImageMultiHash, imagehash.ImageHash)):

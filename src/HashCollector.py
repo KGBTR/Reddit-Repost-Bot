@@ -6,7 +6,9 @@ class HashCollector:
     def __init__(self, rBot, hashdb):
         self.rBot = rBot
         self.hash_database = hashdb
-        self.hash_database.create_table("Hashes", "postid TEXT, dhash TEXT, ahash TEXT, phash TEXT, UNIQUE(postid)")
+        self.hash_database.create_table(
+            "Hashes", "postid TEXT, dhash TEXT, ahash TEXT, phash TEXT, UNIQUE(postid)"
+        )
         self.hash_database.create_table("beforeafter", "before TEXT, after TEXT")
 
         before_after = self.hash_database.fetch_before_and_after()
@@ -15,16 +17,28 @@ class HashCollector:
             before_after = self.hash_database.fetch_before_and_after()
         before, after = before_after[0], before_after[1]
 
-        if before == 'None':
-            newest_post_fetched = PostFetcherPushShift(subs=['KGBTR'], before_or_after='after', limit=1).fetch_posts()
+        if before == "None":
+            newest_post_fetched = PostFetcherPushShift(
+                subs=["KGBTR"], before_or_after="after", limit=1
+            ).fetch_posts()
             newest_post = list(newest_post_fetched)[0]
             before = after = newest_post.created_utc
             print(f"newest post timestamp fetched: {before}")
 
-        self.fetcher_before = PostFetcherPushShift(subs=['KGBTR'], before_or_after='before', pagination_param=before,
-                                                   limit=100, only_image=True)
-        self.fetcher_after = PostFetcherPushShift(subs=['KGBTR'], before_or_after='after', pagination_param=after,
-                                                  limit=100, only_image=True)
+        self.fetcher_before = PostFetcherPushShift(
+            subs=["KGBTR"],
+            before_or_after="before",
+            pagination_param=before,
+            limit=100,
+            only_image=True,
+        )
+        self.fetcher_after = PostFetcherPushShift(
+            subs=["KGBTR"],
+            before_or_after="after",
+            pagination_param=after,
+            limit=100,
+            only_image=True,
+        )
 
     def start_collectin(self):
         # # RESETS EVERYTHING INCLUDING ALL THE HASHES!!:
@@ -46,18 +60,35 @@ class HashCollector:
                     try:
                         hashedimg = HashedImage(post.url, calculate_on_init=True)
                     except ImgNotAvailable:
-                        print(f"skipping a submission with deleted image: {post.id_} {post.url}")
+                        print(
+                            f"skipping a submission with deleted image: {post.id_} {post.url}"
+                        )
                         continue
-                    self.hash_database.insert_data(post.id_, str(hashedimg.dhash), str(hashedimg.ahash), str(hashedimg.phash))
+                    self.hash_database.insert_data(
+                        post.id_,
+                        str(hashedimg.dhash),
+                        str(hashedimg.ahash),
+                        str(hashedimg.phash),
+                    )
             else:
                 print("fetched from before")
                 for post in self.fetcher_before.fetch_posts():
                     try:
                         hashedimg = HashedImage(post.url, calculate_on_init=True)
                     except ImgNotAvailable:
-                        print(f"skipping a submission with deleted image: {post.id_} {post.url}")
+                        print(
+                            f"skipping a submission with deleted image: {post.id_} {post.url}"
+                        )
                         continue
-                    self.hash_database.insert_data(post.id_, str(hashedimg.dhash), str(hashedimg.ahash), str(hashedimg.phash))
+                    self.hash_database.insert_data(
+                        post.id_,
+                        str(hashedimg.dhash),
+                        str(hashedimg.ahash),
+                        str(hashedimg.phash),
+                    )
 
             b_a_dec += 1
-            self.hash_database.update_before_and_after(self.fetcher_before.pagination_param, self.fetcher_after.pagination_param)
+            self.hash_database.update_before_and_after(
+                self.fetcher_before.pagination_param,
+                self.fetcher_after.pagination_param,
+            )
