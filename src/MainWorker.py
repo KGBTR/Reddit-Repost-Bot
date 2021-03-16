@@ -23,7 +23,7 @@ class MainWorker:
             subs=["KGBTR"],
             before_or_after="before",
             only_image=True,
-            limit=50,
+            limit=7,
         )
         self.ReplyJob = namedtuple("ReplyJob", "reply_to text status")
 
