@@ -1,0 +1,6 @@
+docker-compose.yml
+venv
+.venv
+Procfile
+app.json
+README.md

@@ -1,22 +1,36 @@
-version: "3.9"  # optional since v1.27.0
+version: "3.8"
 services:
-  bot:
-    image: python:3.9-alpine
-    container_name: repost-bot-ripoff
+  hoarder:
+    init: true
+    build:
+      context: .
+      target: base-stage
+    image: kgbtrbot-hort:hoarder
+    container_name: kgbtrbot-hort-hoarder
     working_dir: /app
+    restart: on-failure
     env_file: .env
     volumes:
-      - ./CompareImageHashes:/app/CompareImageHashes
-      - ./HashDatabase:/ap/HashDatabase
-      - ./PyGoogleImgReverseSearch:/app/PyGoogleImgReverseSearch
-      - ./rStuff:/app/rStuff
-      - ./info.py:/app/info.py
-      - ./main.py:/app/main.py
-      - ./strings.py:/app/strings.py
-      - ./MainWorker.py:/app/MainWorker.py
-      - ./HashCollector.py:/app/HashCollector.py
+      - ./src/:/app/
     networks:
       - net
+    command: python hoarder.py
+
+  main:
+    init: true
+    build:
+      context: .
+      target: base-stage
+    image: kgbtrbot-hort:main
+    container_name: kgbtrbot-hort-main
+    working_dir: /app
+    restart: on-failure
+    env_file: .env
+    volumes:
+      - ./src/:/app/
+    networks:
+      - net
+    command: python main.py
 
 networks:
   net:
