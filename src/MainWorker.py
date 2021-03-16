@@ -115,7 +115,7 @@ class MainWorker:
         hashfrompost = HashedImage(post.url, calculate_on_init=False)
         result_txt = None
         lang_f = tr if post.lang == "tr" else en
-        for index in range(3):
+        for index in range(2):
             if index == 0:
                 query_result = self.hash_database.query(
                     hashfrompost.get_phash(), "phash", 90, post.id_
@@ -124,10 +124,10 @@ class MainWorker:
                 query_result = self.hash_database.query(
                     hashfrompost.get_dhash(), "dhash", 96, post.id_
                 )
-            elif index == 2:
-                query_result = self.hash_database.query(
-                    hashfrompost.get_ahash(), "ahash", 99, post.id_
-                )
+            # elif index == 2:
+            #     query_result = self.hash_database.query(
+            #         hashfrompost.get_ahash(), "ahash", 99, post.id_
+            #     )
             else:
                 raise NotImplementedError
 
