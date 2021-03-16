@@ -49,22 +49,24 @@ class PostFetcher:
         for post in posts_iter:
             the_post = rPost(post)
             if the_post.id_ in self.last_fetched_ids or (self.stop_if_saved and the_post.is_saved):
+                self.pagination_param = the_post.id_
+                self.params.update({self.before_or_after: self.pagination_param})
                 break
             if (self.only_image and not the_post.is_img) or (self.skip_if_nsfw and the_post.over_18):
                 continue
             yield the_post
 
-        if posts_len != 0 and self.stop_if_saved:
+        if posts_len != 0 and not the_post.is_saved and self.stop_if_saved:
             self.bot.save_thing_by_id(posts[self._pagination_post_indexer]['data']['name'])
 
         if self.pagination:
-            if self.before_or_after == "before":
-                self.last_fetched_ids.extend([post['data']['name'] for post in posts[:15]])
-            elif self.before_or_after == "after":
-                self.last_fetched_ids.extend([post['data']['name'] for post in posts[-15:]])
-            self.last_fetched_ids = self.last_fetched_ids[-15:]
-
             if posts_len != 0:
+                if self.before_or_after == "before":
+                    self.last_fetched_ids.extend([post['data']['name'] for post in posts[:15]])
+                elif self.before_or_after == "after":
+                    self.last_fetched_ids.extend([post['data']['name'] for post in posts[-15:]])
+                self.last_fetched_ids = self.last_fetched_ids[-15:]
+
                 self._fallback_index = 0
                 self.pagination_param = posts[self._pagination_post_indexer]['data']['name']
             else:
