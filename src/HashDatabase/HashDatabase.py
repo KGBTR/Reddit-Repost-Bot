@@ -1,7 +1,7 @@
 from environ import DATABASE_URL
 import psycopg2
 from CompareImageHashes import CompareImageHashes
-import logging
+from logger import logger
 
 
 class HashDatabase:
@@ -9,14 +9,9 @@ class HashDatabase:
         self.conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         self.cur = self.conn.cursor()
 
-        logging.basicConfig(
-            level=logging.INFO,
-            datefmt="%H:%M",
-            format="%(asctime)s, %(levelname)s: %(message)s",
-        )
-        self.logger = logging.getLogger("hoarder")
+        self.logger = logger
         self.logger.disabled = False
-        self.logger.info("hash db initilaized")
+        self.logger.info("HashDB initilaized")
 
     def create_table(self, name, values):
         # values = postid TEXT, dhash TEXT
