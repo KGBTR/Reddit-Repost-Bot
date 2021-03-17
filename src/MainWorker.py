@@ -28,7 +28,7 @@ class MainWorker:
         self.ReplyJob = namedtuple("ReplyJob", "reply_to text status")
 
     def comment_parser(self, body):
-        sub_filter = "all"
+        sub_filter = None
         gallery_index = 0
         for n in body.split():
             n_len = len(n)
@@ -166,7 +166,7 @@ class MainWorker:
             post = self.reverse_img_bot.get_info_by_id(notif.post_id)
             parsed_comment = self.comment_parser(notif.body)
             sub_filter, gallery_index = (
-                parsed_comment["sub_filter"],
+                parsed_comment["sub_filter"] or notif.subreddit,
                 parsed_comment["gallery_index"],
             )
 
