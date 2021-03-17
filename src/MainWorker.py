@@ -119,22 +119,24 @@ class MainWorker:
             reply_comment_text = f"{lang_f['nothing']}{lang_f['outro']}"
             return self.ReplyJob(post, reply_comment_text, "fail")
         result_txts = []
-        for index in range(2):
-            if index == 0:
-                query_results: list = self.hash_database.query(
-                    hashfrompost.get_phash(), "phash", 90, post.id_
-                )
-            elif index == 1:
-                query_results: list = self.hash_database.query(
-                    hashfrompost.get_dhash(), "dhash", 96, post.id_
-                )
+        for index in range(1):
+            # if index == 0:
+            #     query_results: list = self.hash_database.query(
+            #         hashfrompost.get_phash(), "phash", 90, post.id_
+            #     )
+            # elif index == 1:
+            #     query_results: list = self.hash_database.query(
+            #         hashfrompost.get_dhash(), "dhash", 96, post.id_
+            #     )
             # elif index == 2:
             #     query_result: list = self.hash_database.query(
             #         hashfrompost.get_ahash(), "ahash", 99, post.id_
             #     )
-            else:
-                raise NotImplementedError
-
+            # else:
+            #     raise NotImplementedError
+            query_results: list = self.hash_database.query(
+                (hashfrompost.get_phash(), hashfrompost.get_dhash(), hashfrompost.get_ahash()), "", 90, post.id_
+            )
             if query_results is not None:
                 for query_result in query_results:
                     postid, similarity = query_result["post_id"], query_result["similarity"]

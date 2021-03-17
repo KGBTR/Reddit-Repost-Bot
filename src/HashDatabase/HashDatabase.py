@@ -36,15 +36,20 @@ class HashDatabase:
         finally:
             self.conn.commit()
 
-    def query(self, base_hash, selected_hash, min_similarity_percentage, skip_post_id):
-        comparer = CompareImageHashes(base_hash)
-        sql = f"SELECT postid, {selected_hash} FROM Hashes WHERE postid != '{skip_post_id}';"
+    def query(self, base_hashes, selected_hash, min_similarity_percentage, skip_post_id):
+        comparer_p = CompareImageHashes(base_hashes[0])
+        comparer_d = CompareImageHashes(base_hashes[1])
+        comparer_a = CompareImageHashes(base_hashes[2])
+        sql = f"SELECT postid, ahash, phash, dhash FROM Hashes WHERE postid != '{skip_post_id}';"
         # self.cur.execute("SELECT postid, %d FROM Hashes;", (selected_hash,))
         self.cur.execute(sql)
         similar_posts = []
         for row in self.cur:
-            post_id, sltced_hash = row[0], row[1]
-            similarity = comparer.hamming_distance_percentage(sltced_hash)
+            post_id, ahash, phash, dhash = row[0], row[1], row[2], row[3]
+            similarity_phash = comparer_p.hamming_distance_percentage(phash)
+            similarity_dhash = comparer_d.hamming_distance_percentage(dhash)
+            similarity_ahash = comparer_a.hamming_distance_percentage(ahash)
+            similarity = (similarity_dhash + similarity_phash + similarity_ahash) / 3
             if similarity >= min_similarity_percentage:
                 similar_posts.append({"similarity": similarity, "post_id": post_id})
         if bool(similar_posts):
