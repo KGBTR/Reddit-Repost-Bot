@@ -1,7 +1,7 @@
-from info import DATABASE_URL
+from environ import DATABASE_URL
 import psycopg2
 from CompareImageHashes import CompareImageHashes
-import logging
+from logger import logger
 
 
 class HashDatabase:
@@ -9,14 +9,9 @@ class HashDatabase:
         self.conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         self.cur = self.conn.cursor()
 
-        logging.basicConfig(
-            level=logging.INFO,
-            datefmt="%H:%M",
-            format="%(asctime)s, %(levelname)s: %(message)s",
-        )
-        self.logger = logging.getLogger("hoarder")
+        self.logger = logger
         self.logger.disabled = False
-        self.logger.info("hash db initilaized")
+        self.logger.info("HashDB initilaized")
 
     def create_table(self, name, values):
         # values = postid TEXT, dhash TEXT
@@ -36,25 +31,39 @@ class HashDatabase:
         finally:
             self.conn.commit()
 
-    def query(self, base_hash, selected_hash, min_similarity_percentage, skip_post_id):
-        comparer = CompareImageHashes(base_hash)
-        sql = f"SELECT postid, {selected_hash} FROM Hashes WHERE postid != '{skip_post_id}';"
+    def query(self, base_hashes, selected_hash, min_similarity_percentage, skip_post_id):
+        comparer_p = CompareImageHashes(base_hashes[0])
+        comparer_d = CompareImageHashes(base_hashes[1])
+        comparer_a = CompareImageHashes(base_hashes[2])
+        sql = f"SELECT postid, ahash, phash, dhash FROM Hashes WHERE postid != '{skip_post_id}';"
         # self.cur.execute("SELECT postid, %d FROM Hashes;", (selected_hash,))
         self.cur.execute(sql)
+        similar_posts = []
         for row in self.cur:
-            post_id, sltced_hash = row[0], row[1]
-            similarity = comparer.hamming_distance_percentage(sltced_hash)
+            post_id, ahash, phash, dhash = row[0], row[1], row[2], row[3]
+            similarity_phash = comparer_p.hamming_distance_percentage(phash)
+            similarity_dhash = comparer_d.hamming_distance_percentage(dhash)
+            similarity_ahash = comparer_a.hamming_distance_percentage(ahash)
+            similarity = (similarity_dhash + similarity_phash + similarity_ahash) / 3
             if similarity >= min_similarity_percentage:
-                return {"similarity": similarity, "post_id": post_id}
-        return None
+                similar_posts.append({"similarity": similarity, "post_id": post_id})
+        if bool(similar_posts):
+            return similar_posts
+        else:
+            return None
 
     def fetch_all(self, table_name):
         sql = f"SELECT * FROM {table_name};"
         self.cur.execute(sql)
         return self.cur.fetchall()
 
-    def update_before_and_after(self, before, after):
-        sql = f"UPDATE beforeafter SET before = '{before}', after = '{after}';"
+    def update_before_and_after(self, before=None, after=None):
+        ba_l = []
+        if before is not None:
+            ba_l.append(f"before = '{before}'")
+        if after is not None:
+            ba_l.append(f"after = '{after}'")
+        sql = f"UPDATE beforeafter SET {','.join(ba_l)}"
         self.cur.execute(sql)
         self.conn.commit()
 

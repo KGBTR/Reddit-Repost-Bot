@@ -9,11 +9,7 @@ class ImgNotAvailable(Exception):
 
 class HashedImage:
     def __init__(self, pic_url, calculate_on_init=False):
-        try:
-            self.opened_stream = Image.open(self._get_raw_img(pic_url))
-        except UnidentifiedImageError:
-            print(f"UnidentifiedImageError: {pic_url}")
-            raise ImgNotAvailable
+        self.opened_stream = self._get_pilimg(pic_url)
         if calculate_on_init:
             self.ahash = self.get_ahash()
             self.dhash = self.get_dhash()
@@ -32,15 +28,15 @@ class HashedImage:
     # def get_crophash(self):
     #     return imagehash.crop_resistant_hash(self.opened_stream)
 
-    def _get_raw_img(self, url):
+    def _get_pilimg(self, url):
         try:
             img = requests.get(url, stream=True)
-        except requests.exceptions.ConnectionError:
+            img.raise_for_status()
+            img.raw.decode_content = True
+            pilimg = Image.open(img.raw)
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, UnidentifiedImageError):
             raise ImgNotAvailable
-        if img.status_code != 200:
-            raise ImgNotAvailable
-        img.raw.decode_content = True
-        return img.raw
+        return pilimg
 
 
 class CompareImageHashes:
@@ -52,15 +48,7 @@ class CompareImageHashes:
         hamming_dist = hash2_ - self.base_img_hash
         return 100.0 * (1.0 - hamming_dist / 64.0)
 
-    @staticmethod
-    def _get_raw_img(url):
-        img = requests.get(url, stream=True)
-        img.raw.decode_content = True
-        return img.raw
-
-    def _get_imagehash_type_from_any(
-        self, anything
-    ):  # only url, ImageHash and hex str is accepted
+    def _get_imagehash_type_from_any(self, anything):  # only url, ImageHash and hex str is accepted
         if isinstance(anything, str):
             if anything.startswith("http"):
                 return HashedImage(

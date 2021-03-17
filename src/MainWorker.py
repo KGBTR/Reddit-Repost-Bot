@@ -2,7 +2,7 @@ from PyGoogleImgReverseSearch import GoogleImgReverseSearch
 from strings import tr, en
 from time import sleep
 import re
-from CompareImageHashes import CompareImageHashes, HashedImage
+from CompareImageHashes import CompareImageHashes, HashedImage, ImgNotAvailable
 from datetime import datetime
 from collections import namedtuple
 from rStuff import PostFetcher
@@ -28,7 +28,7 @@ class MainWorker:
         self.ReplyJob = namedtuple("ReplyJob", "reply_to text status")
 
     def comment_parser(self, body):
-        sub_filter = "all"
+        sub_filter = None
         gallery_index = 0
         for n in body.split():
             n_len = len(n)
@@ -112,43 +112,50 @@ class MainWorker:
         return reply_built
 
     def database_query_from_post(self, post):
-        hashfrompost = HashedImage(post.url, calculate_on_init=False)
-        result_txt = None
         lang_f = tr if post.lang == "tr" else en
-        for index in range(2):
-            if index == 0:
-                query_result = self.hash_database.query(
-                    hashfrompost.get_phash(), "phash", 90, post.id_
-                )
-            elif index == 1:
-                query_result = self.hash_database.query(
-                    hashfrompost.get_dhash(), "dhash", 96, post.id_
-                )
+        try:
+            hashfrompost = HashedImage(post.url, calculate_on_init=False)
+        except ImgNotAvailable:
+            reply_comment_text = f"{lang_f['nothing']}{lang_f['outro']}"
+            return self.ReplyJob(post, reply_comment_text, "fail")
+        result_txts = []
+        for index in range(1):
+            # if index == 0:
+            #     query_results: list = self.hash_database.query(
+            #         hashfrompost.get_phash(), "phash", 90, post.id_
+            #     )
+            # elif index == 1:
+            #     query_results: list = self.hash_database.query(
+            #         hashfrompost.get_dhash(), "dhash", 96, post.id_
+            #     )
             # elif index == 2:
-            #     query_result = self.hash_database.query(
+            #     query_result: list = self.hash_database.query(
             #         hashfrompost.get_ahash(), "ahash", 99, post.id_
             #     )
-            else:
-                raise NotImplementedError
+            # else:
+            #     raise NotImplementedError
+            query_results: list = self.hash_database.query(
+                (hashfrompost.get_phash(), hashfrompost.get_dhash(), hashfrompost.get_ahash()), "", 90, post.id_
+            )
+            if query_results is not None:
+                for query_result in query_results:
+                    postid, similarity = query_result["post_id"], query_result["similarity"]
+                    post_found = self.reverse_img_bot.get_info_by_id(postid)
+                    link_mode = "np" if post.subreddit == "Turkey" else "www"
+                    posted_at = datetime.fromtimestamp(post_found.created_utc).strftime(
+                        "%d/%m/%Y"
+                    )
+                    post_direct = f"https://{link_mode}.reddit.com{post_found.permalink}"
+                    sub = post_found.subreddit_name_prefixed
+                    post_title_truncated = post_found.title[:30]
+                    if len(post.title) > 30:
+                        post_title_truncated += "..."
+                    result_txts.append(f"- [{post_title_truncated}]({post_direct}) posted at {posted_at} in {sub} (%{similarity})")
 
-            if query_result is not None:
-                postid, similarity = query_result["post_id"], query_result["similarity"]
-                post_found = self.reverse_img_bot.get_info_by_id(postid)
-                link_mode = "np" if post.subreddit == "Turkey" else "www"
-                posted_at = datetime.fromtimestamp(post_found.created_utc).strftime(
-                    "%d/%m/%Y"
-                )
-                post_direct = f"https://{link_mode}.reddit.com{post_found.permalink}"
-                sub = post_found.subreddit_name_prefixed
-                post_title_truncated = post_found.title[:30]
-                if len(post.title) > 30:
-                    post_title_truncated += "..."
-                result_txt = f"- [{post_title_truncated}]({post_direct}) posted at {posted_at} in {sub} (%{similarity})"
-                break
-
-        if bool(result_txt):
+        if bool(result_txts):
+            result_txts_joined = '\r\n\n'.join(result_txts)
             reply_comment_text = (
-                f"{lang_f['found_these']}\r\n\n{result_txt}{lang_f['outro']}"
+                f"{lang_f['found_these']}\r\n\n{result_txts_joined}{lang_f['outro']}"
             )
             return self.ReplyJob(post, reply_comment_text, "success")
         else:
@@ -162,7 +169,7 @@ class MainWorker:
             post = self.reverse_img_bot.get_info_by_id(notif.post_id)
             parsed_comment = self.comment_parser(notif.body)
             sub_filter, gallery_index = (
-                parsed_comment["sub_filter"],
+                parsed_comment["sub_filter"] or notif.subreddit,
                 parsed_comment["gallery_index"],
             )
 
@@ -201,17 +208,20 @@ class MainWorker:
             return None
 
     def start_working(self):
+        testing_post_o = self.reverse_img_bot.get_info_by_id("t3_m71m5p")
         while True:
             # AUTO POST FETCHING:
             # THUS, ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
             for post in self.fetcher.fetch_posts():
                 print(f"checking: {post}")
                 reply_job = self.database_query_from_post(post)
+                tst_text = f"{reply_job.text}\r\n\npost:{post.id_}"
                 if reply_job.status == "success":
                     self.reverse_img_bot.send_reply(
-                        reply_job.text, post, handle_ratelimit=True
+                        tst_text,  # reply_job.text,
+                        testing_post_o,  # post,
+                        handle_ratelimit=True
                     )
-            print()
             # NOTIFS HANDLED HERE:
             # GOOGLE + DATABASE QUERY
             notifs = self.reverse_img_bot.check_inbox(rkind="t1")
