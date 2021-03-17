@@ -2,7 +2,7 @@ from PyGoogleImgReverseSearch import GoogleImgReverseSearch
 from strings import tr, en
 from time import sleep
 import re
-from CompareImageHashes import CompareImageHashes, HashedImage
+from CompareImageHashes import CompareImageHashes, HashedImage, ImgNotAvailable
 from datetime import datetime
 from collections import namedtuple
 from rStuff import PostFetcher
@@ -112,9 +112,13 @@ class MainWorker:
         return reply_built
 
     def database_query_from_post(self, post):
-        hashfrompost = HashedImage(post.url, calculate_on_init=False)
-        result_txt = None
         lang_f = tr if post.lang == "tr" else en
+        try:
+            hashfrompost = HashedImage(post.url, calculate_on_init=False)
+        except ImgNotAvailable:
+            reply_comment_text = f"{lang_f['nothing']}{lang_f['outro']}"
+            return self.ReplyJob(post, reply_comment_text, "fail")
+        result_txt = None
         for index in range(2):
             if index == 0:
                 query_result = self.hash_database.query(
