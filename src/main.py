@@ -1,5 +1,5 @@
 from rStuff import rBot
-from info import (
+from environ import (
     useragent,
     client_id,
     client_secret,

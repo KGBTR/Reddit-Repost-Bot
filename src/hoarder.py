@@ -1,4 +1,4 @@
-from info import (
+from environ import (
     SENTRY_DSN,
     SENTRY_TRACES_SAMPLE_RATE,
 )

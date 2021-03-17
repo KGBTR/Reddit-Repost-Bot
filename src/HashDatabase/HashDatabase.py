@@ -1,4 +1,4 @@
-from info import DATABASE_URL
+from environ import DATABASE_URL
 import psycopg2
 from CompareImageHashes import CompareImageHashes
 import logging
