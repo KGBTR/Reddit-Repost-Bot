@@ -4,8 +4,7 @@ from time import sleep
 
 
 class HashCollector:
-    def __init__(self, rBot, hashdb):
-        self.rBot = rBot
+    def __init__(self, hashdb):
         self.hash_database = hashdb
         self.hash_database.create_table(
             "Hashes", "postid TEXT, dhash TEXT, ahash TEXT, phash TEXT, UNIQUE(postid)"
