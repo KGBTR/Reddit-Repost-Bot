@@ -112,49 +112,41 @@ class MainWorker:
                 break
         return reply_built
 
-    def database_query_from_post(self, post):
+    def database_query_from_post(self, post, min_similarity):
         lang_f = tr if post.lang == "tr" else en
         try:
             hashfrompost = HashedImage(post.url, calculate_on_init=False)
         except ImgNotAvailable:
             reply_comment_text = f"{lang_f['nothing']}{lang_f['outro']}"
             return self.ReplyJob(post, reply_comment_text, "fail")
-        result_txts = []
-        for index in range(1):
-            # if index == 0:
-            #     query_results: list = self.hash_database.query(
-            #         hashfrompost.get_phash(), "phash", 90, post.id_
-            #     )
-            # elif index == 1:
-            #     query_results: list = self.hash_database.query(
-            #         hashfrompost.get_dhash(), "dhash", 96, post.id_
-            #     )
-            # elif index == 2:
-            #     query_result: list = self.hash_database.query(
-            #         hashfrompost.get_ahash(), "ahash", 99, post.id_
-            #     )
-            # else:
-            #     raise NotImplementedError
-            query_results: list = self.hash_database.query(
-                (hashfrompost.get_phash(), hashfrompost.get_dhash(), hashfrompost.get_ahash()), "", 90, post.id_
-            )
-            if query_results is not None:
-                for query_result in query_results:
-                    postid, similarity = query_result["post_id"], query_result["similarity"]
-                    post_found = self.reverse_img_bot.get_info_by_id(postid)
-                    link_mode = "np" if post.subreddit == "Turkey" else "www"
-                    posted_at = datetime.fromtimestamp(post_found.created_utc).strftime(
-                        "%d/%m/%Y"
-                    )
-                    post_direct = f"https://{link_mode}.reddit.com{post_found.permalink}"
-                    sub = post_found.subreddit_name_prefixed
-                    post_title_truncated = post_found.title[:30]
-                    if len(post.title) > 30:
-                        post_title_truncated += "..."
-                    result_txts.append(f"- [{post_title_truncated}]({post_direct}) posted at {posted_at} in {sub} (%{similarity})")
 
-        if bool(result_txts):
-            result_txts_joined = '\r\n\n'.join(result_txts)
+        comparer_p = CompareImageHashes(hashfrompost.get_phash())
+        comparer_d = CompareImageHashes(hashfrompost.get_dhash())
+        comparer_a = CompareImageHashes(hashfrompost.get_ahash())
+
+        results_comment_text = []
+        for query_result in self.hash_database.query(post.id_):
+            post_id, ahash, phash, dhash = query_result[0], query_result[1], query_result[2], query_result[3]
+            similarity_phash = comparer_p.hamming_distance_percentage(phash)
+            similarity_dhash = comparer_d.hamming_distance_percentage(dhash)
+            similarity_ahash = comparer_a.hamming_distance_percentage(ahash)
+            similarity = (similarity_dhash + similarity_phash + similarity_ahash) / 3
+
+            if similarity >= min_similarity:
+                post_found = self.reverse_img_bot.get_info_by_id(post_id)
+                link_mode = "np" if post.subreddit == "Turkey" else "www"
+                posted_at = datetime.fromtimestamp(post_found.created_utc).strftime("%d/%m/%Y")
+                post_direct = f"https://{link_mode}.reddit.com{post_found.permalink}"
+                sub = post_found.subreddit_name_prefixed
+                post_title_truncated = post_found.title[:30]
+                if len(post.title) > 30:
+                    post_title_truncated += "..."
+                results_comment_text.append(
+                    f"- [{post_title_truncated}]({post_direct}) posted at {posted_at} in {sub} (%{similarity})"
+                )
+
+        if bool(results_comment_text):
+            result_txts_joined = '\r\n\n'.join(results_comment_text)
             reply_comment_text = (
                 f"{lang_f['found_these']}\r\n\n{result_txts_joined}{lang_f['outro']}"
             )
@@ -215,7 +207,7 @@ class MainWorker:
             # THUS, ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
             for post in self.fetcher.fetch_posts():
                 logger.info(f"Checking: {post}")
-                reply_job = self.database_query_from_post(post)
+                reply_job = self.database_query_from_post(post, 90)
                 tst_text = f"{reply_job.text}\r\n\npost:{post.id_}"
                 if reply_job.status == "success":
                     self.reverse_img_bot.send_reply(
@@ -241,7 +233,7 @@ class MainWorker:
 
                 # DATABASE
                 post = self.reverse_img_bot.get_info_by_id(notif.post_id)
-                reply_job_database = self.database_query_from_post(post)
+                reply_job_database = self.database_query_from_post(post, 90)
                 if reply_job_database.status == "success":
                     self.reverse_img_bot.send_reply(
                         reply_job_database.text, notif, handle_ratelimit=True
