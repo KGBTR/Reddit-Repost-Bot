@@ -1,7 +1,7 @@
 from CompareImageHashes import HashedImage, ImgNotAvailable
 from rStuff import PostFetcherPushShift
 from time import sleep
-from .logger import logger
+from logger import logger
 
 
 class HashCollector:
