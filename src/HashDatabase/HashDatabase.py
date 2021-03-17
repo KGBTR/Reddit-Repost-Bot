@@ -41,12 +41,16 @@ class HashDatabase:
         sql = f"SELECT postid, {selected_hash} FROM Hashes WHERE postid != '{skip_post_id}';"
         # self.cur.execute("SELECT postid, %d FROM Hashes;", (selected_hash,))
         self.cur.execute(sql)
+        similar_posts = []
         for row in self.cur:
             post_id, sltced_hash = row[0], row[1]
             similarity = comparer.hamming_distance_percentage(sltced_hash)
             if similarity >= min_similarity_percentage:
-                return {"similarity": similarity, "post_id": post_id}
-        return None
+                similar_posts.append({"similarity": similarity, "post_id": post_id})
+        if bool(similar_posts):
+            return similar_posts
+        else:
+            return None
 
     def fetch_all(self, table_name):
         sql = f"SELECT * FROM {table_name};"

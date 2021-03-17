@@ -118,41 +118,42 @@ class MainWorker:
         except ImgNotAvailable:
             reply_comment_text = f"{lang_f['nothing']}{lang_f['outro']}"
             return self.ReplyJob(post, reply_comment_text, "fail")
-        result_txt = None
+        result_txts = []
         for index in range(2):
             if index == 0:
-                query_result = self.hash_database.query(
+                query_results: list = self.hash_database.query(
                     hashfrompost.get_phash(), "phash", 90, post.id_
                 )
             elif index == 1:
-                query_result = self.hash_database.query(
+                query_results: list = self.hash_database.query(
                     hashfrompost.get_dhash(), "dhash", 96, post.id_
                 )
             # elif index == 2:
-            #     query_result = self.hash_database.query(
+            #     query_result: list = self.hash_database.query(
             #         hashfrompost.get_ahash(), "ahash", 99, post.id_
             #     )
             else:
                 raise NotImplementedError
 
-            if query_result is not None:
-                postid, similarity = query_result["post_id"], query_result["similarity"]
-                post_found = self.reverse_img_bot.get_info_by_id(postid)
-                link_mode = "np" if post.subreddit == "Turkey" else "www"
-                posted_at = datetime.fromtimestamp(post_found.created_utc).strftime(
-                    "%d/%m/%Y"
-                )
-                post_direct = f"https://{link_mode}.reddit.com{post_found.permalink}"
-                sub = post_found.subreddit_name_prefixed
-                post_title_truncated = post_found.title[:30]
-                if len(post.title) > 30:
-                    post_title_truncated += "..."
-                result_txt = f"- [{post_title_truncated}]({post_direct}) posted at {posted_at} in {sub} (%{similarity})"
-                break
+            if query_results is not None:
+                for query_result in query_results:
+                    postid, similarity = query_result["post_id"], query_result["similarity"]
+                    post_found = self.reverse_img_bot.get_info_by_id(postid)
+                    link_mode = "np" if post.subreddit == "Turkey" else "www"
+                    posted_at = datetime.fromtimestamp(post_found.created_utc).strftime(
+                        "%d/%m/%Y"
+                    )
+                    post_direct = f"https://{link_mode}.reddit.com{post_found.permalink}"
+                    sub = post_found.subreddit_name_prefixed
+                    post_title_truncated = post_found.title[:30]
+                    if len(post.title) > 30:
+                        post_title_truncated += "..."
+                    result_txts.append(f"- [{post_title_truncated}]({post_direct}) posted at {posted_at} in {sub} (%{similarity})")
 
-        if bool(result_txt):
+        if bool(result_txts):
+            result_txts_joined = '\r\n\n'.join(result_txts)
             reply_comment_text = (
-                f"{lang_f['found_these']}\r\n\n{result_txt}{lang_f['outro']}"
+                f"{lang_f['found_these']}\r\n\n{result_txts_joined}{lang_f['outro']}"
             )
             return self.ReplyJob(post, reply_comment_text, "success")
         else:
