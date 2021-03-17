@@ -1,6 +1,6 @@
 from PyGoogleImgReverseSearch import GoogleImgReverseSearch
 from strings import tr, en
-from time import sleep
+from time import sleep, time
 from logger import logger
 import re
 from CompareImageHashes import CompareImageHashes, HashedImage, ImgNotAvailable
@@ -125,6 +125,7 @@ class MainWorker:
         comparer_a = CompareImageHashes(hashfrompost.get_ahash())
 
         results_comment_text = []
+        query_tic = time()
         for query_result in self.hash_database.query(post.id_):
             post_id, ahash, phash, dhash = query_result[0], query_result[1], query_result[2], query_result[3]
             similarity_phash = comparer_p.hamming_distance_percentage(phash)
@@ -144,11 +145,12 @@ class MainWorker:
                 results_comment_text.append(
                     f"- [{post_title_truncated}]({post_direct}) posted at {posted_at} in {sub} (%{similarity})"
                 )
-
+        query_toc = time()
+        query_secs = '%.4f' % (query_toc - query_tic)
         if bool(results_comment_text):
             result_txts_joined = '\r\n\n'.join(results_comment_text)
             reply_comment_text = (
-                f"{lang_f['found_these']}\r\n\n{result_txts_joined}{lang_f['outro']}"
+                f"{lang_f['found_these']}\r\n\n{result_txts_joined}{lang_f['outro']}{lang_f['db_query_time'].format(secs=query_secs)}"
             )
             return self.ReplyJob(post, reply_comment_text, "success")
         else:
