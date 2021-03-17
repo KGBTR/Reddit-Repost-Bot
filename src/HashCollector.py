@@ -1,6 +1,7 @@
 from CompareImageHashes import HashedImage, ImgNotAvailable
 from rStuff import PostFetcherPushShift
 from time import sleep
+from .logger import logger
 
 
 class HashCollector:
@@ -23,7 +24,7 @@ class HashCollector:
             ).fetch_posts()
             newest_post = list(newest_post_fetched)[0]
             before = after = newest_post.created_utc
-            print(f"newest post timestamp fetched: {before}")
+            logger.info(f"Newest post timestamp fetched: {before}")
 
         # self.fetcher_before = PostFetcherPushShift(
         #     subs=["KGBTR"],
@@ -55,12 +56,12 @@ class HashCollector:
         # b_a_dec = 0
         while True:
             # if b_a_dec % 4 == 0:
-            print("fetched from after")
+            logger.info("Fetched from after")
             for post in self.fetcher_after.fetch_posts():
                 try:
                     hashedimg = HashedImage(post.url, calculate_on_init=True)
                 except ImgNotAvailable:
-                    print(
+                    logger.warn(
                         f"skipping a submission with deleted image: {post.id_} {post.url}"
                     )
                     continue
@@ -72,13 +73,13 @@ class HashCollector:
                 )
             sleep(30)
             # else:
-            #     print("fetched from before")
+            #     logger.info("Fetched from before")
             #     for post in self.fetcher_before.fetch_posts():
             #         try:
             #             hashedimg = HashedImage(post.url, calculate_on_init=True)
             #         except ImgNotAvailable:
-            #             print(
-            #                 f"skipping a submission with deleted image: {post.id_} {post.url}"
+            #             logger.warn(
+            #               f"skipping a submission with deleted image: {post.id_} {post.url}"
             #             )
             #             continue
             #         self.hash_database.insert_data(

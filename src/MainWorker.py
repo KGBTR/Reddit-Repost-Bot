@@ -1,6 +1,7 @@
 from PyGoogleImgReverseSearch import GoogleImgReverseSearch
 from strings import tr, en
 from time import sleep
+from logger import logger
 import re
 from CompareImageHashes import CompareImageHashes, HashedImage, ImgNotAvailable
 from datetime import datetime
@@ -95,7 +96,7 @@ class MainWorker:
         start_pg_index = 0
         reply_built = ""
         while not at_least_one_reply and start_pg_index != 15:
-            print(f"page {start_pg_index} to {start_pg_index + 3}")
+            logger.info(f"page {start_pg_index} to {start_pg_index + 3}")
             results = GoogleImgReverseSearch.reverse_search(
                 pic_url=img_url,
                 page_start=start_pg_index,
@@ -185,7 +186,7 @@ class MainWorker:
                 if sub_filter.lower() == "all"
                 else f"www.reddit.com/r/{sub_filter}"
             )
-            print(f"searching for: {img_url} in {filter_site}")
+            logger.info(f"searching for: {img_url} in {filter_site}")
 
             link_mode = "np" if post.subreddit == "Turkey" else "www"
             reply_built = self.search_loop(img_url, filter_site, link_mode)
@@ -213,7 +214,7 @@ class MainWorker:
             # AUTO POST FETCHING:
             # THUS, ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
             for post in self.fetcher.fetch_posts():
-                print(f"checking: {post}")
+                logger.info(f"Checking: {post}")
                 reply_job = self.database_query_from_post(post)
                 tst_text = f"{reply_job.text}\r\n\npost:{post.id_}"
                 if reply_job.status == "success":
@@ -226,7 +227,7 @@ class MainWorker:
             # GOOGLE + DATABASE QUERY
             notifs = self.reverse_img_bot.check_inbox(rkind="t1")
             for notif in notifs:
-                print(notif)
+                logger.info(notif)
                 # GOOGLE
                 self.reverse_img_bot.read_notifs([notif])
                 reply_job = self.notif_handler2(notif)
