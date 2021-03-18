@@ -24,7 +24,7 @@ class MainWorker:
             subs=["KGBTR"],
             before_or_after="before",
             only_image=True,
-            limit=7,
+            limit=2,
         )
         self.ReplyJob = namedtuple("ReplyJob", "reply_to text status")
 
@@ -132,6 +132,7 @@ class MainWorker:
             similarity_dhash = comparer_d.hamming_distance_percentage(dhash)
             similarity_ahash = comparer_a.hamming_distance_percentage(ahash)
             similarity = (similarity_dhash + similarity_phash + similarity_ahash) / 3
+            similarity = float('%.2f' % similarity)
 
             if similarity >= min_similarity:
                 post_found = self.reverse_img_bot.get_info_by_id(post_id)
@@ -203,19 +204,15 @@ class MainWorker:
             return None
 
     def start_working(self):
-        testing_post_o = self.reverse_img_bot.get_info_by_id("t3_m71m5p")
         while True:
             # AUTO POST FETCHING:
             # THUS, ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
             for post in self.fetcher.fetch_posts():
                 logger.info(f"Checking: {post}")
                 reply_job = self.database_query_from_post(post, 90)
-                tst_text = f"{reply_job.text}\r\n\npost:{post.id_}"
                 if reply_job.status == "success":
                     self.reverse_img_bot.send_reply(
-                        tst_text,  # reply_job.text,
-                        testing_post_o,  # post,
-                        handle_ratelimit=True
+                        reply_job.text, post, handle_ratelimit=True
                     )
             # NOTIFS HANDLED HERE:
             # GOOGLE + DATABASE QUERY
@@ -223,6 +220,8 @@ class MainWorker:
             for notif in notifs:
                 logger.info(notif)
                 # GOOGLE
+                if "save" in notif.body.lower():
+                    continue
                 self.reverse_img_bot.read_notifs([notif])
                 reply_job = self.notif_handler2(notif)
                 if reply_job is None:
@@ -247,4 +246,3 @@ class MainWorker:
                     )
                     continue
 
-            sleep(5)
