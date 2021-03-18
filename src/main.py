@@ -9,6 +9,7 @@ from environ import (
     SENTRY_DSN,
     SENTRY_TRACES_SAMPLE_RATE,
 )
+from logger import logger
 from HashDatabase import HashDatabase
 from MainWorker import MainWorker
 import sentry_sdk
@@ -19,6 +20,9 @@ if __name__ == "__main__":
             SENTRY_DSN,
             traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
         )
+        logger.info("Sentry initialization")
+    else:
+        logger.warn("Sentry skipped")
 
     reverse_img_bot = rBot(useragent, client_id, client_secret, bot_username, bot_pass)
     hash_db = HashDatabase()
