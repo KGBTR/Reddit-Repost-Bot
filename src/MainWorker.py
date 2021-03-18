@@ -132,6 +132,7 @@ class MainWorker:
             similarity_dhash = comparer_d.hamming_distance_percentage(dhash)
             similarity_ahash = comparer_a.hamming_distance_percentage(ahash)
             similarity = (similarity_dhash + similarity_phash + similarity_ahash) / 3
+            similarity = float('%.2f' % similarity)
 
             if similarity >= min_similarity:
                 post_found = self.reverse_img_bot.get_info_by_id(post_id)
