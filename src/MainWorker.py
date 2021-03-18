@@ -220,6 +220,8 @@ class MainWorker:
             for notif in notifs:
                 logger.info(notif)
                 # GOOGLE
+                if "save" in notif.body.lower():
+                    continue
                 self.reverse_img_bot.read_notifs([notif])
                 reply_job = self.notif_handler2(notif)
                 if reply_job is None:
