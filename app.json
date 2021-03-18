@@ -2,6 +2,7 @@
   "name": "Reverse Image Search Reddit Bot",
   "description": "If you bored repost submission on reddit this bot for you.",
   "image": "heroku/python",
+  "logo": "https://user-images.githubusercontent.com/29407019/111668072-6b951800-8826-11eb-9f77-7ace7ecd866e.png",
   "repository": "https://github.com/scrubjay55/Reddit-Repost-Bot-RipOff",
   "keywords": [
     "python",
@@ -12,20 +13,59 @@
     "search"
   ],
   "env": {
+    "LOG_LEVEL": {
+      "required": false,
+      "value": "INFO",
+      "description": "For logging level. Default is INFO"
+    },
+    "PY_ENV": {
+      "required": true,
+      "value": "production",
+      "description": "It controls the production and development situations. The default is development. But set as production."
+    },
+    "DATABASE_URL": {
+      "required": false,
+      "description": "PostgreSQL database URI. Like a postgresql://localhost:5433/mydb. Not required. But if not use Heroku PostgreSQL add-on you must declared. Default is empty"
+    },
+    "SENTRY_USE": {
+      "required": true,
+      "value": "False",
+      "description": "If you use Sentry issue tracker you must set True or true or 1. Else you must set False or false or 0. Default is False"
+    },
+    "SENTRY_DSN": {
+      "required": false,
+      "description": "SENTRY URI like a https://9wPPEr9Sz4JT1BHYtKm1n115y3VPz6cJVdzInChn.ingest.sentry.io/Gvu9hoO. Default is filler string",
+      "value": "https://9wPPEr9Sz4JT1BHYtKm1n115y3VPz6cJVdzInChn.ingest.sentry.io/Gvu9hoO"
+    },
+    "SENTRY_TRACES_SAMPLE_RATE": {
+      "required": false,
+      "description": "Sentry tracing sample rate. Value between 0.0 to 1.0. Default is 1.0",
+      "value": "1.0"
+    },
     "useragent": {
-      "description": "Reddit bot useragent like u/BotName:V1.0 by u/CreatorName"
+      "required": true,
+      "description": "Reddit bot useragent like u/BotName:V1.0 by u/CreatorName. Default is filler string",
+      "value": "u/BotName:V1.0 by u/CreatorName"
     },
     "client_id": {
-      "description": "Reddit bot client id like bbIBQSrpKHpWJy"
+      "required": true,
+      "description": "Reddit bot client id like bbIBQSrpKHpWJy. Default is filler string",
+      "value": "bbIBQSrpKHpWJy"
     },
     "client_secret": {
-      "description": "Reddit bot client secret like ybYajpectYCbdLecIOmSEOUzedR"
+      "required": true,
+      "description": "Reddit bot client secret like ybYajpectYCbdLecIOmSEOUzedR. Default is filler string",
+      "value": "ybYajpectYCbdLecIOmSEOUzedR"
     },
     "bot_username": {
-      "description": "Reddit bot username like BotUsername. Shouldn't contain u/"
+      "required": true,
+      "description": "Reddit bot username like BotUsername. Shouldn't contain u/. Default is filler username",
+      "value": "BotName"
     },
     "bot_pass": {
-      "description": "Reddit bot password like WAYiCAGhCasWTiSslawKQiXdZzPHshwigWWD"
+      "required": true,
+      "description": "Reddit bot password like WAYiCAGhCasWTiSslawKQiXdZzPHshwigWWD. Default is filler password",
+      "value": "WAYiCAGhCasWTiSslawKQiXdZzPHshwigWWD"
     }
   },
   "addons": [ "heroku-postgresql" ]
