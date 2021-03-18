@@ -204,19 +204,15 @@ class MainWorker:
             return None
 
     def start_working(self):
-        testing_post_o = self.reverse_img_bot.get_info_by_id("t3_m71m5p")
         while True:
             # AUTO POST FETCHING:
             # THUS, ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
             for post in self.fetcher.fetch_posts():
                 logger.info(f"Checking: {post}")
                 reply_job = self.database_query_from_post(post, 90)
-                tst_text = f"{reply_job.text}\r\n\npost:{post.id_}"
                 if reply_job.status == "success":
                     self.reverse_img_bot.send_reply(
-                        tst_text,  # reply_job.text,
-                        testing_post_o,  # post,
-                        handle_ratelimit=True
+                        reply_job.text, post, handle_ratelimit=True
                     )
             # NOTIFS HANDLED HERE:
             # GOOGLE + DATABASE QUERY
