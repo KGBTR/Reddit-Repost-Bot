@@ -2,6 +2,7 @@
   "name": "Reverse Image Search Reddit Bot",
   "description": "If you bored repost submission on reddit this bot for you.",
   "image": "heroku/python",
+  "logo": "https://user-images.githubusercontent.com/29407019/111668072-6b951800-8826-11eb-9f77-7ace7ecd866e.png",
   "repository": "https://github.com/scrubjay55/Reddit-Repost-Bot-RipOff",
   "keywords": [
     "python",
@@ -18,7 +19,7 @@
       "description": "For logging level. Default is INFO"
     },
     "PY_ENV": {
-      "required": false,
+      "required": true,
       "value": "production",
       "description": "It controls the production and development situations. The default is development. But set as production."
     },
@@ -57,12 +58,12 @@
       "value": "ybYajpectYCbdLecIOmSEOUzedR"
     },
     "bot_username": {
-      "required": false,
+      "required": true,
       "description": "Reddit bot username like BotUsername. Shouldn't contain u/. Default is filler username",
-      "value": "u/BotName"
+      "value": "BotName"
     },
     "bot_pass": {
-      "required": false,
+      "required": true,
       "description": "Reddit bot password like WAYiCAGhCasWTiSslawKQiXdZzPHshwigWWD. Default is filler password",
       "value": "WAYiCAGhCasWTiSslawKQiXdZzPHshwigWWD"
     }
