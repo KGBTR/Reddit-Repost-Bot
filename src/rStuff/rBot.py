@@ -143,6 +143,8 @@ class rBot:
                 logger.info(f"Sleep for {sleep_for}")
                 if handle_ratelimit:
                     sleep(sleep_for)
+                    self.handled_req("POST", f"{self.base}/api/comment", data=data)
+                    return 0
                 else:
                     return sleep_for
             else:
