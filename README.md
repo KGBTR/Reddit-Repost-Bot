@@ -32,11 +32,13 @@ Hort is an expression specific to KGBTR community. This commune uses this term f
 
 3. On Unix-based systems, you must doing `.env.example` rename as `.env` via `mv .env.example .env`. If you are using Windows-based system, you can use Powershell's `Rename-Item .env.example .env`. You need to do this terminal command to the project root folder.
 
-4. Fill the inside of the `.env` file with the environment variables. Like this:
+4. Fill the inside of the `.env` file with the environment variables. Like this: 
 
 ```dotenv
   DATABASE_URL=postgresql://localhost:5433/mydb
 ```
+
+5. Run both command `python src/main.py` and `python src/hoarder.py`
 
 ### If you want running locally with `docker-compose` you follow this steps 🐳
 
