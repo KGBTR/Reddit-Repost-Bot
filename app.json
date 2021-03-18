@@ -4,14 +4,7 @@
   "image": "heroku/python",
   "logo": "https://user-images.githubusercontent.com/29407019/111668072-6b951800-8826-11eb-9f77-7ace7ecd866e.png",
   "repository": "https://github.com/scrubjay55/Reddit-Repost-Bot-RipOff",
-  "keywords": [
-    "python",
-    "reddit",
-    "bot",
-    "reverse",
-    "image",
-    "search"
-  ],
+  "keywords": ["python", "reddit", "bot", "reverse", "image", "search"],
   "env": {
     "LOG_LEVEL": {
       "required": false,
@@ -68,5 +61,5 @@
       "value": "WAYiCAGhCasWTiSslawKQiXdZzPHshwigWWD"
     }
   },
-  "addons": [ "heroku-postgresql" ]
+  "addons": ["heroku-postgresql"]
 }

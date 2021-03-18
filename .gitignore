@@ -152,6 +152,11 @@ Thumbs.db #thumbnail cache on Windows
 # profiling data
 .prof
 
+#logs
+
+logs/
+log/
+
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
