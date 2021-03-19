@@ -42,11 +42,12 @@ class HashedImage:
 class CompareImageHashes:
     def __init__(self, base):
         self.base_img_hash = self._get_imagehash_type_from_any(base)
+        self.base_img_hash_l = float(len(self.base_img_hash))
 
     def hamming_distance_percentage(self, hash2):
         hash2_ = self._get_imagehash_type_from_any(hash2)
         hamming_dist = hash2_ - self.base_img_hash
-        return 100.0 * (1.0 - hamming_dist / 64.0)
+        return 100.0 * (1.0 - hamming_dist / self.base_img_hash_l)
 
     def _get_imagehash_type_from_any(self, anything):  # only url, ImageHash and hex str is accepted
         if isinstance(anything, str):
