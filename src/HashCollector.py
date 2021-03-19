@@ -1,5 +1,5 @@
 from CompareImageHashes import HashedImage, ImgNotAvailable
-from rStuff import PostFetcherPushShift
+from rStuff import PostFetcher
 from time import sleep
 from logger import logger
 
@@ -18,13 +18,15 @@ class HashCollector:
             before_after = self.hash_database.fetch_before_and_after()
         before, after = before_after[0], before_after[1]
 
-        if before == "None":
-            newest_post_fetched = PostFetcherPushShift(
-                subs=["KGBTR"], before_or_after="after", limit=1
-            ).fetch_posts()
+        if after == "None":
+            newest_post_fetched = PostFetcher(
+                subs=["KGBTR"],
+                before_or_after="before",
+                limit=1).fetch_posts()
             newest_post = list(newest_post_fetched)[0]
-            before = after = newest_post.created_utc
-            logger.info(f"Newest post timestamp fetched: {before}")
+            # before = after = newest_post.created_utc
+            before = after = newest_post.id_
+            logger.info(f"Newest post id fetched: {before}")
 
         # self.fetcher_before = PostFetcherPushShift(
         #     subs=["KGBTR"],
@@ -33,9 +35,16 @@ class HashCollector:
         #     limit=100,
         #     only_image=True,
         # )
-        self.fetcher_after = PostFetcherPushShift(
+        # self.fetcher_after = PostFetcherPushShift(
+        #     subs=["KGBTR"],
+        #     before_or_after="after",
+        #     pagination_param=after,
+        #     limit=100,
+        #     only_image=True,
+        # )
+        self.fetcher_after = PostFetcher(
             subs=["KGBTR"],
-            before_or_after="after",
+            before_or_after="before",
             pagination_param=after,
             limit=100,
             only_image=True,

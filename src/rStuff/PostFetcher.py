@@ -1,13 +1,17 @@
 from .rUtils import rPost
+import requests
 
 
 class PostFetcher:
-    def __init__(self, bot, subs=None, limit=50, sort_by='new', pagination=True, stop_if_saved=False, skip_if_nsfw=False,
+    def __init__(self, bot=None, subs=None, limit=50, sort_by='new', pagination=True, stop_if_saved=False, skip_if_nsfw=False,
                  before_or_after='before', pagination_param=None, multiname=None, only_image=False):
         assert any(before_or_after == ba for ba in ['before', 'after'])
         assert (subs is not None) != (multiname is not None)
 
         self.bot = bot
+        if bot is None:
+            self.r_session = requests.session()
+            self.r_session.headers = {"User-Agent": "#placeholder"}
 
         self.subs = subs
         self.params = {"limit": limit}
@@ -30,13 +34,17 @@ class PostFetcher:
         elif self.before_or_after == 'after':
             self._pagination_post_indexer = self._fallback_index_incrementer = -1
 
+        base_h = "https://www.reddit.com" if bot is None else self.bot.base
         if multiname is not None:
-            self._uri = f"{self.bot.base}/user/{self.bot.bot_username}/m/{multiname}/{self.sort_by}"
+            self._uri = f"{base_h}/user/{self.bot.bot_username}/m/{multiname}/{self.sort_by}.json"
         else:
-            self._uri = f"{self.bot.base}/r/{'+'.join(self.subs)}/{self.sort_by}"
+            self._uri = f"{base_h}/r/{'+'.join(self.subs)}/{self.sort_by}.json"
 
     def fetch_posts(self):
-        posts_req = self.bot.handled_req('GET', self._uri, params=self.params).json()
+        if self.bot is not None:
+            posts_req = self.bot.handled_req('GET', self._uri, params=self.params).json()
+        else:
+            posts_req = self.r_session.get(self._uri, params=self.params).json()
         posts = posts_req["data"]["children"]
         posts_len = posts_req["data"]["dist"]
         if self.before_or_after == "before":
@@ -54,7 +62,7 @@ class PostFetcher:
                 continue
             yield the_post
 
-        if posts_len != 0 and not the_post.is_saved and self.stop_if_saved:
+        if posts_len != 0 and self.bot is not None and not the_post.is_saved and self.stop_if_saved:
             self.bot.save_thing_by_id(posts[self._pagination_post_indexer]['data']['name'])
 
         if self.pagination:
