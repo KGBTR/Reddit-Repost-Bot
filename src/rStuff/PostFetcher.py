@@ -49,8 +49,6 @@ class PostFetcher:
         for post in posts_iter:
             the_post = rPost(post)
             if the_post.id_ in self.last_fetched_ids or (self.stop_if_saved and the_post.is_saved):
-                self.pagination_param = the_post.id_
-                self.params.update({self.before_or_after: self.pagination_param})
                 break
             if (self.only_image and not the_post.is_img) or (self.skip_if_nsfw and the_post.over_18):
                 continue
