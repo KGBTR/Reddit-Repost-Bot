@@ -5,7 +5,7 @@ from .rUtils import rNotif, rBase, rPost
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
-# from ratelimit import sleep_and_retry, limits
+from ratelimit import sleep_and_retry, limits
 from time import sleep, time
 from logger import logger
 
@@ -45,8 +45,8 @@ class rBot:
         self.req_sesh = self.prep_session()
         self.get_new_token()  # Fetch the token on instantioation (i cant spell for shit)
 
-    # @sleep_and_retry
-    # @limits(calls=60, period=60)
+    @sleep_and_retry
+    @limits(calls=60, period=60)
     def handled_req(self, method, url, **kwargs):
         if self.next_token_t <= int(time()):
             self.get_new_token()

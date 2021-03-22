@@ -205,6 +205,7 @@ class MainWorker:
 
     def start_working(self):
         while True:
+            s_tic = time()
             # AUTO POST FETCHING:
             # THUS, ONLY DATABASE QUERY DUE TO GOOGLE'S RATE LIMIT
             for post in self.fetcher.fetch_posts():
@@ -218,10 +219,10 @@ class MainWorker:
             # GOOGLE + DATABASE QUERY
             notifs = self.reverse_img_bot.check_inbox(rkind="t1")
             for notif in notifs:
-                logger.info(notif)
                 # GOOGLE
                 if "save" in notif.body.lower():
                     continue
+                logger.info(notif)
                 self.reverse_img_bot.read_notifs([notif])
                 reply_job = self.notif_handler2(notif)
                 if reply_job is None:
@@ -245,4 +246,7 @@ class MainWorker:
                         reply_job.text, notif, handle_ratelimit=True
                     )
                     continue
-
+            e_toc = time()
+            elapsed = e_toc - s_tic
+            if elapsed < 20:
+                sleep(20 - elapsed)

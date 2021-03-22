@@ -22,7 +22,7 @@ if __name__ == "__main__":
         )
         logger.info("Sentry initialization")
     else:
-        logger.warn("Sentry skipped")
+        logger.warning("Sentry skipped")
 
     reverse_img_bot = rBot(useragent, client_id, client_secret, bot_username, bot_pass)
     hash_db = HashDatabase()
