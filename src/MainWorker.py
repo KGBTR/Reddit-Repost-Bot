@@ -169,7 +169,10 @@ class MainWorker:
                 parsed_comment["gallery_index"],
             )
 
-            if not post.is_img:
+            if post.is_video:
+                reply_comment_text = f"{lang_f['is_video']}{lang_f['outro']}"
+                return self.ReplyJob(notif, reply_comment_text, "fail")
+            elif not post.is_img:
                 reply_comment_text = f"{lang_f['no_image']}{lang_f['outro']}"
                 return self.ReplyJob(notif, reply_comment_text, "fail")
             if post.is_gallery:

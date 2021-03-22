@@ -43,6 +43,7 @@ class rPost:
         self.created_utc = content['created_utc']
         self.id_without_prefix = content['id']
         self.is_self = content['is_self']  # text or not
+        self.is_video = content['is_video']  # video or not
         self.author = content['author']  # author
         self.title = content['title']
 
@@ -88,7 +89,7 @@ class rPost:
             return False
 
     def _is_img_post(self):
-        if not self.is_self and self.url.split(".")[-1].lower() in ["jpg", "jpeg", "png", "tiff", "bmp"]:
+        if not (self.is_self or self.is_video) and self.url.split(".")[-1].lower() in ["jpg", "jpeg", "png", "tiff", "bmp"]:
             return True
         else:
             return False
